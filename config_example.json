@@ -4,5 +4,5 @@
         "192.168.1.101"
     ],
     "log_folder": "logs",
-    "interval_minutes": 3
+    "interval_minutes": 5
 }
