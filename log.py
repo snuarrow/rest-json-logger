@@ -39,7 +39,7 @@ def get_responses(config: dict):
             url = f'http://{url}'
 
         i = 0
-        while i < 10:
+        while i < 1:
             i += 1
             try:
                 logger.info(f"GET: {url}")
