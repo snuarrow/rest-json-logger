@@ -5,8 +5,8 @@ import sys
 from os import path, mkdir
 from time import sleep
 from datetime import datetime
-from plot import plot
-import threading
+from hexlogger import logger
+
 
 def parse_args():
     p = argparse.ArgumentParser(
@@ -19,6 +19,10 @@ def parse_args():
     p.add_argument(
         '--plot',
         action='store_true',
+    )
+    p.add_argument(
+        '--loop',
+        action="store_true",
     )
     return p.parse_args()
 
@@ -33,11 +37,12 @@ def get_responses(config: dict):
     for url in config["urls"]:
         if 'http' not in url:
             url = f'http://{url}'
-        
+
         i = 0
         while i < 10:
             i += 1
             try:
+                logger.info(f"GET: {url}")
                 responses.append(requests.get(url).json())
                 break
             except requests.exceptions.ConnectionError:
@@ -56,9 +61,6 @@ def write_log(config: dict, responses: list):
     except FileNotFoundError:
         file_content = []
 
-    
-    #plot()
-
     file_content.append({
         "t": datetime.now(),
         "responses": responses
@@ -73,30 +75,28 @@ def write_log(config: dict, responses: list):
     with open(logfile, 'w') as f:
         json.dump(file_content, f, indent=4, default=str)
 
-    print(f'{datetime.now()}: logged {len(responses)} responses')
+    logger.info(f'logged {len(responses)} responses')
 
 
 def do(config: dict):
     write_log(config=config, responses=get_responses(config))
 
 
-def timed_loop():
-    config = load_config_file(config_path=config_file)
+def timed_loop(config: dict):
     while True:
+        logger.info("requesting data..")
         do(config=config)
-        print("imma loopin")
         sleep(config["interval_minutes"] * 60)
 
 
 def main():
     args = parse_args()
-    
-    running = True
-    thread = threading.Thread(name='daemon', target=timed_loop)
-    thread.setDaemon(True)
-    thread.start()
+    config = load_config_file(config_path=args.config_file)
+    if args.loop:
+        timed_loop(config=config)
+    else:
+        do(config=config)
 
-    plot()
 
 
 if __name__ == '__main__':
