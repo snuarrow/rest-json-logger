@@ -46,6 +46,7 @@ def get_responses(config: dict):
                 responses.append(requests.get(url).json())
                 break
             except requests.exceptions.ConnectionError:
+                logger.error(f"failed to connect: {url}")
                 continue
     return responses
 
