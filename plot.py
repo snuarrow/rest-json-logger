@@ -3,8 +3,12 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 from random import random
 import json
+import sys
 import threading
 from time import sleep
+import numpy as np
+import pandas as pd
+import seaborn as sns
 
 data = None
 running = False
@@ -57,13 +61,59 @@ def start_animation():
     ani = animation.FuncAnimation(fig, animate, fargs=(xs, ys, y2s, y3s), interval=180000)
     plt.show()
 
-def plot():
-    sleep(20)
+
+def moving_average(x, w):
+    return np.convolve(x, np.ones(w), 'valid') / w
+
+
+def plot_24h():
+    file_name = "/home/username/logs/2022_02_20_00.json"
+    with open(file_name, "r") as f:
+        logs = json.load(f)
+
+    sns.set_theme(style="darkgrid")
+    plt.figure(figsize=(30, 15))
+
+    data = {}
+    data["times"] = []
+    data["temps"] = []
+
+    for line in logs:
+        ts = dt.datetime.strptime(line["t"],"%Y-%m-%d %H:%M:%S.%f")
+        temperature = line.get("responses", [])[0]["humidity"]
+        if temperature:
+            data["times"].append(ts)
+            data["temps"].append(temperature)
+        #print(json.dumps(line, indent=4))
+        #print(type(ts))
+        #exit()
+
+
+    data["temps"] = moving_average(data["temps"], 21)
+    data["times"] = data["times"][10:-10]
+    print(len(data["times"]))
+    print(len(data["temps"]))
+    plt.ylim(18,42)
+    sns.lineplot(x=data["times"], y=data["temps"])
+    plt.show()
+    plt.savefig("matplotlib.png")
+
+def main():
+    #sleep(20)
     print('plotting')
-    start_animation()
+    plot_24h()
+    #start_animation()
     #global running
     #if not running:
     #    running = True
     #    thread = threading.Thread(name='daemon', target=start_animation)
     #    thread.setDaemon(True)
     #    thread.start()
+
+
+
+if __name__ == '__main__':
+    try:
+        main()
+    except KeyboardInterrupt:
+        sys.exit(1)
