@@ -9,7 +9,7 @@ conda activate rest-json-logger
 python main.py --config-file <file_path> --loop
 ```
 
-enabling cron task
+enabling cron task (you need to edit the cron.sh to use your config file)
 ```
 sudo service cron status
 crontab -e
