@@ -1,11 +1,12 @@
 # rest-json-logger
 
-firstly make config file, use "config_example.json" as base
+firstly download and install miniconda, then make a config file, use "config_example.json" as base
 
 for looped run
 ```
 conda env update -f cenv.yaml -n rest-json-logger
-python log.py --config-file <file_path> --loop
+conda activate rest-json-logger
+python main.py --config-file <file_path> --loop
 ```
 
 enabling cron task

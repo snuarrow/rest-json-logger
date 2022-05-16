@@ -17,10 +17,6 @@ def parse_args():
         type=str,
     )
     p.add_argument(
-        '--plot',
-        action='store_true',
-    )
-    p.add_argument(
         '--loop',
         action="store_true",
     )
@@ -37,17 +33,28 @@ def get_responses(config: dict):
     for url in config["urls"]:
         if 'http' not in url:
             url = f'http://{url}'
-
-        i = 0
-        while i < 1:
-            i += 1
-            try:
+        try:
+            if config["method"] == "GET":
                 logger.info(f"GET: {url}")
-                responses.append(requests.get(url).json())
+                responses.append(
+                    requests.get(
+                        url = url,
+                        headers = config.get("headers"),
+                    ).json(),
+                )
                 break
-            except requests.exceptions.ConnectionError:
-                logger.error(f"failed to connect: {url}")
-                continue
+            if config["method"] == "POST":
+                logger.info(f"POST: {url}")
+                responses.append(
+                    requests.post(
+                        url = url,
+                        headers = config.get("headers"),
+                        body = config.get("body"),
+                    )
+                )
+        except requests.exceptions.ConnectionError:
+            logger.error(f"failed to connect: {url}")
+            continue
     return responses
 
 
